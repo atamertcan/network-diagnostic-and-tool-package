@@ -38,6 +38,6 @@ def print_machine_info():
     return {"hostname": host_name, "ip": ip_address, "interfaces": interfaces}
 
 
-if __name__ == '__main__':                                  # [01-getinfo.py]
+if __name__ == '__main__':
     print_machine_info()
     get_remote_machine_info()
