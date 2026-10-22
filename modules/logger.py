@@ -2,11 +2,11 @@ import os
 import time
 from modules.sntp_time import sntp_client
 
-# logs/ folder next to main.py (created if missing, git does not keep empty folders)
+# logs/ folder next to main.py
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "network_tool.log")
 
-# difference between SNTP time and local time, stays 0 if SNTP is not reachable
+# difference between SNTP time and local time
 time_offset = 0.0
 
 
