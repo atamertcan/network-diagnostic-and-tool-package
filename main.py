@@ -7,6 +7,7 @@ that calls each module.
 """
 from modules.machine_info import print_machine_info, get_remote_machine_info
 from modules.echo_test import run_echo_test
+from modules.sntp_time import run_sntp_check, NTP_SERVER
 
 
 def show_menu():
@@ -33,7 +34,11 @@ def main():
         elif choice == "2":
             port = input("Port (Enter = 9900): ").strip()
             run_echo_test(int(port) if port else 9900)
-        elif choice in ("3", "4", "5", "6"):
+        elif choice == "3":
+            server = input("SNTP server (Enter = %s): " % NTP_SERVER).strip()
+            method = input("Method - 1) raw socket  2) ntplib (Enter = 1): ").strip()
+            run_sntp_check(server or NTP_SERVER, use_ntplib=(method == "2"))
+        elif choice in ("4", "5", "6"):
             print("Not implemented yet.")
         elif choice == "0":
             print("Bye!")
