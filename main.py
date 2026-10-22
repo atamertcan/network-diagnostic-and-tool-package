@@ -10,6 +10,7 @@ from modules.echo_test import run_echo_test
 from modules.sntp_time import run_sntp_check, NTP_SERVER
 from modules.socket_settings import run_socket_settings
 from modules.error_management import check_connection
+from modules.chat import run_chat_server, run_chat_client
 
 
 def show_menu():
@@ -62,7 +63,16 @@ def main():
             recv_size = ask_number("Receive buffer size", 2048, 1024, 1048576)
             run_socket_settings(timeout, send_size, recv_size)
         elif choice == "5":
-            print("Not implemented yet.")
+            mode = input("Mode - s) server  c) client: ").strip().lower()
+            if mode == "s":
+                port = ask_number("Port", 5000, 1, 65535)
+                run_chat_server(port)
+            elif mode == "c":
+                name = input("Your name: ").strip() or "client"
+                port = ask_number("Port", 5000, 1, 65535)
+                run_chat_client(name, port)
+            else:
+                print("Invalid mode, choose 's' or 'c'.")
         elif choice == "6":
             host = input("Host to check (Enter = www.python.org): ").strip() or "www.python.org"
             port = ask_number("Port", 80, 1, 65535)
