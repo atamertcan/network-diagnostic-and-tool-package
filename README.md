@@ -1,11 +1,5 @@
 # Network Diagnostic and Tool Package
 
-CEN322 – Network Programming, Project 01
-Çukurova University, Computer Engineering
-
-- **Student:** Atamert Can
-- **Student ID:** _________
-
 A Python tool that combines socket programming, network diagnostics, time
 synchronization, chat and error handling. It can be used from a terminal menu
 (`main.py`) or from a simple graphical interface (`gui.py`).
@@ -140,29 +134,3 @@ error each one produces:
 | `nonexistent.invalid` | 80 | address-related error (`gaierror`) |
 | `localhost` | 1 | connection refused |
 | `www.python.org` | 8080 | connection timed out |
-
-## Log File
-
-`logs/network_tool.log` example:
-
-```
-[2026-10-22 21:51:03] [Main] Program started
-[2026-10-22 21:51:10] [MachineInfo] hostname=Atamert, ip=192.168.0.13, 8 interfaces
-[2026-10-22 21:51:15] [EchoTest] port 9900: connection successful, data matches
-[2026-10-22 21:51:22] [SNTP] 0.uk.pool.ntp.org: local - server = -0.331 s
-[2026-10-22 21:51:30] [ErrorMgmt] Connection error: [WinError 10061] No connection could be made ...
-[2026-10-22 21:51:40] [Main] Program closed
-```
-
-## Notes and Problems Found
-
-- `socket.gethostbyname(hostname)` returns only one IP address. On a computer
-  with VPN or virtual adapters (Radmin VPN, VirtualBox, Hyper-V) it may return
-  the address of a virtual adapter instead of the real LAN address. The
-  interface list shows every address together with its adapter.
-- While testing, `pip` and the SNTP check failed with `getaddrinfo failed`
-  although the browser worked: Radmin VPN added a second default gateway and
-  DNS queries to 8.8.8.8 were lost. Disabling the VPN adapter fixed it.
-- The chat server listens on `localhost`, so all chat clients must run on the same computer.
-- The SNTP comparison does not correct for network delay, so a few
-  milliseconds of difference are normal.
