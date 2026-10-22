@@ -5,11 +5,9 @@ import pickle
 import struct
 import threading
 import os
-import time
+from modules.logger import LOG_DIR, now_str
 
 SERVER_HOST = 'localhost'
-
-LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
 
 
 #Append one chat line with the time to txt
@@ -17,7 +15,7 @@ def save_chat(owner, text):
     os.makedirs(LOG_DIR, exist_ok=True)
     path = os.path.join(LOG_DIR, "chat_%s.txt" % owner)
     with open(path, "a", encoding="utf-8") as f:
-        f.write("[%s] %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), text))
+        f.write("[%s] %s\n" % (now_str(), text))
 
 
 #Send a message: first its size, then the pickled data

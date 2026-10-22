@@ -4,6 +4,7 @@ from modules.sntp_time import run_sntp_check, NTP_SERVER
 from modules.socket_settings import run_socket_settings
 from modules.error_management import check_connection
 from modules.chat import run_chat_server, run_chat_client
+from modules.logger import log, sync_log_clock, LOG_FILE
 
 
 def show_menu():
@@ -36,46 +37,71 @@ def ask_number(text, default, low, high):
 
 
 def main():
+    sync_log_clock()
+    log("Main", "Program started")
     while True:
         show_menu()
         choice = input("Select an option: ").strip()
         if choice == "1":
-            print_machine_info()
+            info = print_machine_info()
             host = input("\nRemote host to resolve (Enter = www.python.org): ").strip()
             get_remote_machine_info(host or "www.python.org")
+            log("MachineInfo", "hostname=%s, ip=%s, %d interfaces"
+                % (info["hostname"], info["ip"], len(info["interfaces"])))
         elif choice == "2":
             port = ask_number("Port", 9900, 1, 65535)
-            run_echo_test(port)
+            if run_echo_test(port):
+                log("EchoTest", "port %d: connection successful, data matches" % port)
+            else:
+                log("EchoTest", "port %d: ERROR, echo test failed" % port)
         elif choice == "3":
-            server = input("SNTP server (Enter = %s): " % NTP_SERVER).strip()
+            server = input("SNTP server (Enter = %s): " % NTP_SERVER).strip() or NTP_SERVER
             method = input("Method - 1) raw socket  2) ntplib (Enter = 1): ").strip()
-            run_sntp_check(server or NTP_SERVER, use_ntplib=(method == "2"))
+            diff = run_sntp_check(server, use_ntplib=(method == "2"))
+            if diff is None:
+                log("SNTP", "%s: ERROR, no time received" % server)
+            else:
+                log("SNTP", "%s: local - server = %+.3f s" % (server, diff))
         elif choice == "4":
             timeout = ask_number("Socket timeout in seconds", 100, 1, 3600)
             send_size = ask_number("Send buffer size", 4096, 1024, 1048576)
             recv_size = ask_number("Receive buffer size", 2048, 1024, 1048576)
-            run_socket_settings(timeout, send_size, recv_size)
+            summary = run_socket_settings(timeout, send_size, recv_size)
+            log("Settings", summary)
         elif choice == "5":
             mode = input("Mode - s) server  c) client: ").strip().lower()
             if mode == "s":
                 port = ask_number("Port", 5000, 1, 65535)
-                run_chat_server(port)
+                log("Chat", "server started on port %d" % port)
+                if run_chat_server(port):
+                    log("Chat", "server on port %d stopped" % port)
+                else:
+                    log("Chat", "ERROR, server could not start on port %d" % port)
             elif mode == "c":
                 name = input("Your name: ").strip() or "client"
                 port = ask_number("Port", 5000, 1, 65535)
-                run_chat_client(name, port)
+                if run_chat_client(name, port):
+                    log("Chat", "%s left the chat on port %d" % (name, port))
+                else:
+                    log("Chat", "ERROR, %s could not connect to port %d" % (name, port))
             else:
                 print("Invalid mode, choose 's' or 'c'.")
         elif choice == "6":
             host = input("Host to check (Enter = www.python.org): ").strip() or "www.python.org"
             port = ask_number("Port", 80, 1, 65535)
-            check_connection(host, port)
+            ok, msg = check_connection(host, port)
+            log("ErrorMgmt", msg)
         elif choice == "0":
-            print("Bye!")
+            log("Main", "Program closed")
+            print("Bye! Log file: %s" % LOG_FILE)
             break
         else:
             print("Invalid option, try again.")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        log("Main", "Program closed with Ctrl+C")
+        print("\nBye!")
