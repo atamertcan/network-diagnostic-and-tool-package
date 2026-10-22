@@ -13,8 +13,13 @@ def echo_server(port):
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_address = (host, port)
     print("Starting up echo server on %s port %s" % server_address)
-    sock.bind(server_address)
-    sock.listen(backlog)
+    try:
+        sock.bind(server_address)
+        sock.listen(backlog)
+    except socket.error as e:
+        print("Echo server could not start: %s" % e)
+        sock.close()
+        return
     print("Waiting to receive message from client")
     client, address = sock.accept()
     data = client.recv(data_payload)
@@ -30,7 +35,9 @@ def echo_client(port, message="Test message. This will be echoed"):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (host, port)
     print("Connecting to %s port %s" % server_address)
+    sock.settimeout(5)  # do not wait forever if the server never answers
     received = b""
+    error = None  # the error is returned so the Error Management module can explain it
     try:
         sock.connect(server_address)
         print("Sending %s" % message)
@@ -46,29 +53,33 @@ def echo_client(port, message="Test message. This will be echoed"):
             print("Received: %s" % data)
     except socket.error as e:
         print("Socket error: %s" % str(e))
+        error = e
     except Exception as e:
         print("Other exception: %s" % str(e))
+        error = e
     finally:
         print("Closing connection to the server")
         sock.close()
-    return received.decode('utf-8')
+    return received.decode('utf-8', errors='replace'), error
 
 
 #Runs server + client together and compares the data
-def run_echo_test(port=9900, message="Test message. This will be echoed"):
-    server_thread = threading.Thread(target=echo_server, args=(port,))
-    server_thread.daemon = True
-    server_thread.start()
-    time.sleep(0.5)
+#with_server=False skips the local server, used to test the error handling
+#Returns (sent, received, error) so the result can be checked by the Error Management module
+def run_echo_test(port=9900, message="Test message. This will be echoed", with_server=True):
+    if with_server:
+        server_thread = threading.Thread(target=echo_server, args=(port,))
+        server_thread.daemon = True
+        server_thread.start()
+        time.sleep(0.5)
 
-    received = echo_client(port, message)
+    received, error = echo_client(port, message)
 
     if received == message:
         print("Connection successful, data matches")
-        return True
     else:
         print("Echo test failed: sent %r, received %r" % (message, received))
-        return False
+    return message, received, error
 
 
 if __name__ == '__main__':

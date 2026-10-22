@@ -2,7 +2,7 @@ from modules.machine_info import print_machine_info, get_remote_machine_info
 from modules.echo_test import run_echo_test
 from modules.sntp_time import run_sntp_check, NTP_SERVER
 from modules.socket_settings import run_socket_settings
-from modules.error_management import check_connection
+from modules.error_management import check_connection, check_echo_result
 from modules.chat import run_chat_server, run_chat_client
 from modules.logger import log, sync_log_clock, LOG_FILE
 
@@ -50,10 +50,10 @@ def main():
                 % (info["hostname"], info["ip"], len(info["interfaces"])))
         elif choice == "2":
             port = ask_number("Port", 9900, 1, 65535)
-            if run_echo_test(port):
-                log("EchoTest", "port %d: connection successful, data matches" % port)
-            else:
-                log("EchoTest", "port %d: ERROR, echo test failed" % port)
+            server = input("Start the local echo server? (Enter = yes, n = no, to test errors): ").strip().lower()
+            sent, received, error = run_echo_test(port, with_server=(server != "n"))
+            ok, msg = check_echo_result(port, sent, received, error)
+            log("EchoTest" if ok else "ErrorMgmt", msg)
         elif choice == "3":
             server = input("SNTP server (Enter = %s): " % NTP_SERVER).strip() or NTP_SERVER
             method = input("Method - 1) raw socket  2) ntplib (Enter = 1): ").strip()

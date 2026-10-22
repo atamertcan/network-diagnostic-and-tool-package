@@ -15,7 +15,7 @@ from modules.machine_info import print_machine_info, get_remote_machine_info
 from modules.echo_test import run_echo_test
 from modules.sntp_time import run_sntp_check, NTP_SERVER
 from modules.socket_settings import run_socket_settings
-from modules.error_management import check_connection
+from modules.error_management import check_connection, check_echo_result
 from modules.logger import log, sync_log_clock, LOG_DIR
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -59,7 +59,10 @@ class NetworkToolGUI:
         # 2 - Echo Test
         box = self.section(form, "2. Echo Test", 1)
         self.echo_port = self.field(box, "Port", "9900", 0, 8)
-        ttk.Button(box, text="Run", bootstyle="success", command=lambda: self.start(self.do_echo)).grid(row=0, column=2, padx=6)
+        self.echo_no_server = tk.BooleanVar(value=False)
+        ttk.Checkbutton(box, text="No server (test errors)", variable=self.echo_no_server,
+                        bootstyle="warning-round-toggle").grid(row=0, column=2, padx=(10, 4))
+        ttk.Button(box, text="Run", bootstyle="success", command=lambda: self.start(self.do_echo)).grid(row=0, column=3, padx=6)
 
         # 3 - SNTP
         box = self.section(form, "3. SNTP Time Check", 2)
@@ -197,10 +200,9 @@ class NetworkToolGUI:
     def do_echo(self):
         self.header("ECHO TEST")
         port = self.number(self.echo_port, 9900, 1, 65535)
-        if run_echo_test(port):
-            log("EchoTest", "port %d: connection successful, data matches" % port)
-        else:
-            log("EchoTest", "port %d: ERROR, echo test failed" % port)
+        sent, received, error = run_echo_test(port, with_server=not self.echo_no_server.get())
+        ok, msg = check_echo_result(port, sent, received, error)
+        log("EchoTest" if ok else "ErrorMgmt", msg)
 
     def do_sntp(self):
         self.header("SNTP TIME CHECK")
