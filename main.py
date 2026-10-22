@@ -8,6 +8,8 @@ that calls each module.
 from modules.machine_info import print_machine_info, get_remote_machine_info
 from modules.echo_test import run_echo_test
 from modules.sntp_time import run_sntp_check, NTP_SERVER
+from modules.socket_settings import run_socket_settings
+from modules.error_management import check_connection
 
 
 def show_menu():
@@ -23,6 +25,22 @@ def show_menu():
     print("0. Exit")
 
 
+#Ask for a whole number, use the default on Enter or on wrong input
+def ask_number(text, default, low, high):
+    answer = input("%s (Enter = %d): " % (text, default)).strip()
+    if not answer:
+        return default
+    try:
+        value = int(answer)
+    except ValueError:
+        print("'%s' is not a number, using %d." % (answer, default))
+        return default
+    if value < low or value > high:
+        print("Value must be between %d and %d, using %d." % (low, high, default))
+        return default
+    return value
+
+
 def main():
     while True:
         show_menu()
@@ -32,14 +50,23 @@ def main():
             host = input("\nRemote host to resolve (Enter = www.python.org): ").strip()
             get_remote_machine_info(host or "www.python.org")
         elif choice == "2":
-            port = input("Port (Enter = 9900): ").strip()
-            run_echo_test(int(port) if port else 9900)
+            port = ask_number("Port", 9900, 1, 65535)
+            run_echo_test(port)
         elif choice == "3":
             server = input("SNTP server (Enter = %s): " % NTP_SERVER).strip()
             method = input("Method - 1) raw socket  2) ntplib (Enter = 1): ").strip()
             run_sntp_check(server or NTP_SERVER, use_ntplib=(method == "2"))
-        elif choice in ("4", "5", "6"):
+        elif choice == "4":
+            timeout = ask_number("Socket timeout in seconds", 100, 1, 3600)
+            send_size = ask_number("Send buffer size", 4096, 1024, 1048576)
+            recv_size = ask_number("Receive buffer size", 2048, 1024, 1048576)
+            run_socket_settings(timeout, send_size, recv_size)
+        elif choice == "5":
             print("Not implemented yet.")
+        elif choice == "6":
+            host = input("Host to check (Enter = www.python.org): ").strip() or "www.python.org"
+            port = ask_number("Port", 80, 1, 65535)
+            check_connection(host, port)
         elif choice == "0":
             print("Bye!")
             break
