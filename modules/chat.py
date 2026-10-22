@@ -81,9 +81,9 @@ class ChatServer:
         print("Press Ctrl+C to stop the server and return to the menu.")
         try:
             while True:
-                # Only readable sockets are watched (client sockets are almost always writable,
-                # watching them made select() return at once and use 100% CPU).
-                # Timeout of 1 s so that Ctrl+C is noticed on Windows.
+                #Only readable sockets are watched (client sockets are almost always writable,
+                #watching them made select() return at once and use 100% CPU).
+                #Timeout of 1 s so that Ctrl+C is noticed on Windows.
                 try:
                     readable, writeable, exceptional = select.select(inputs, [], [], 1)
                 except select.error as e:
@@ -91,24 +91,24 @@ class ChatServer:
 
                 for sock in readable:
                     if sock == self.server:
-                        # handle the server socket: new connection
+                        #handle the server socket: new connection
                         client, address = self.server.accept()
                         print("Chat server: got connection {} from {}".format(client.fileno(), address))
-                        # Read the login name
+                        #Read the login name
                         cname = receive(client).split('NAME: ')[1]
-                        # Compute client name and send back
+                        #Compute client name and send back
                         self.clients += 1
                         send(client, 'CLIENT: ' + str(address[0]))
                         inputs.append(client)
                         self.clientmap[client] = (address, cname)
-                        # Send joining information to other clients
+                        #Send joining information to other clients
                         msg = "\n(Connected: New client ({}) from {})".format(self.clients, self.get_client_name(client))
                         self.show(msg)
                         for output in self.outputs:
                             send(output, msg)
                         self.outputs.append(client)
                     else:
-                        # handle client sockets: incoming messages
+                        #handle client sockets: incoming messages
                         try:
                             data = receive(sock)
                             if data:
@@ -145,14 +145,13 @@ class ChatServer:
             self.close_all()
 
 
+#command line chat client using a separate input thread.
 class ChatClient:
-    """A command line chat client using a separate input thread."""
     def __init__(self, name, port, host=SERVER_HOST):
         self.name = name
         self.connected = False
         self.host = host
         self.port = port
-        # Initial prompt
         self.prompt = '[' + '@'.join((name, socket.gethostname().split('.')[0])) + ']> '
         # Connect to server at port
         try:
@@ -160,18 +159,15 @@ class ChatClient:
             self.sock.connect((host, self.port))
             print("Now connected to chat server @ port {}".format(self.port))
             self.connected = True
-            # Send my name...
             send(self.sock, 'NAME: ' + self.name)
             data = receive(self.sock)
-            # Contains client address, set it
             addr = data.split('CLIENT: ')[1]
             self.prompt = '[' + '@'.join((self.name, addr)) + ']> '
         except socket.error as e:
-            # no sys.exit() here: we return to the menu instead of closing the program
             print("Failed to connect to chat server @ port {}: {}".format(self.port, e))
 
+    #Chat client main loop using a separate input thread.
     def run(self):
-        """Chat client main loop using a separate input thread."""
         if not self.connected:
             return
         print("Type a message and press Enter. Type /quit to leave the chat.")

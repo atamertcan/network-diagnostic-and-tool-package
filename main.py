@@ -1,10 +1,3 @@
-"""
-CEN322 - Network Programming, Project 01
-Network Diagnostic and Tool Package - main menu
-
-[EKLENDI] The whole file is new: the project asks for one menu
-that calls each module.
-"""
 from modules.machine_info import print_machine_info, get_remote_machine_info
 from modules.echo_test import run_echo_test
 from modules.sntp_time import run_sntp_check, NTP_SERVER
