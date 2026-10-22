@@ -1,5 +1,11 @@
 # Network Diagnostic and Tool Package
 
+CEN437 – Network Programming, Project 01
+Çukurova University, Computer Engineering
+
+- **Student:** Atamert Can
+- **Student ID:** 2022555454
+
 A Python tool that combines socket programming, network diagnostics, time
 synchronization, chat and error handling. It can be used from a terminal menu
 (`main.py`) or from a simple graphical interface (`gui.py`).
@@ -23,7 +29,7 @@ synchronization, chat and error handling. It can be used from a terminal menu
 ## Project Structure
 
 ```
-cen322_project/
+cen437_project/
 ├── main.py                    # terminal menu
 ├── gui.py                     # graphical interface (Tkinter + ttkbootstrap)
 ├── requirements.txt
