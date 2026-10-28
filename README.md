@@ -1,10 +1,7 @@
 # Network Diagnostic and Tool Package
 
-CEN437 – Network Programming, Project 01
-Çukurova University, Computer Engineering
-
-- **Student:** Atamert Can
-- **Student ID:** 2022555454
+A Python network toolkit originally developed as a course project for
+Network Programming (Computer Engineering).
 
 A Python tool that combines socket programming, network diagnostics, time
 synchronization, chat and error handling. It can be used from a terminal menu
